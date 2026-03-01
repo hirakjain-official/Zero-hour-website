@@ -1,0 +1,212 @@
+# Zero Hour — Masterplan
+> Companion Website & Community Layer Blueprint
+
+---
+
+## 1. App Overview & Objectives
+
+Zero Hour is a technical assessment and training platform that validates engineering skills through real-world debugging. The **core IDE engine is already built** and live at `http://15.206.117.13/`.
+
+This masterplan covers the **companion website** — the public-facing layer that sits in front of the IDE. Its job is to:
+
+- Onboard new users (students, pro devs, recruiters)
+- Authenticate users via Google OAuth
+- Present a dashboard of challenges and personal progress
+- Foster community through leaderboards and public profiles
+- Surface reports and the "Fixer Portfolio" to recruiters
+
+---
+
+## 2. Target Audience
+
+| Segment | Goal on the Platform |
+|---|---|
+| **College Students** | Escape tutorial hell, build a real portfolio |
+| **Professional Developers** | Prove debugging skills, stand out in hiring |
+| **Recruiters / Companies** | Discover "Verified Fixers", run technical screening |
+
+---
+
+## 3. Core Pages & Features
+
+### 3.1 Landing Page (Public)
+- Hero section: bold value proposition ("Debug real apps. Get hired.")
+- How it works: 3-step visual explainer (Onboard → Debug → Get Verified)
+- Stack badges: React/Node, Python/Django, etc.
+- Social proof: top fixers, number of bugs squashed, community size
+- CTA: "Start Debugging Free" → triggers Google Login
+
+### 3.2 Google OAuth Onboarding Flow
+- **Step 1:** Sign in with Google (single click)
+- **Step 2:** Choose your role — Student / Pro Dev / Recruiter
+- **Step 3:** Select your stack(s) — React/Node, Python/Django, etc.
+- **Step 4:** Pick a difficulty tier — Beginner / Intermediate / Senior
+- **Step 5:** Optional: link GitHub handle (for Fixer Profile)
+- On completion → redirect to personal Dashboard
+
+### 3.3 Dashboard (Authenticated)
+- Personalized greeting + current XP and rank badge
+- "Continue where you left off" — last active challenge
+- Recommended challenges (based on stack + difficulty)
+- Recent activity feed
+- Quick stats: bugs fixed, success rate, current streak
+
+### 3.4 Challenges Browser
+- Filter by: Stack, Difficulty (1–10), Bug Type (Memory Leak, Race Condition, CSS, etc.)
+- Challenge cards: title, stack badge, difficulty score, estimated time, number of fixers
+- "Enter War Room" button → launches existing IDE at `http://15.206.117.13/`
+
+### 3.5 Leaderboard (Community)
+- Global leaderboard: ranked by XP
+- Filterable by: This Week / This Month / All Time
+- Filter by Stack (e.g., "Top Python Fixers")
+- Each row: avatar, username, rank badge, XP, top bug category, bugs fixed count
+- Clicking a user → their public Fixer Profile
+
+### 3.6 Fixer Profile (Public)
+- Public URL: `zerohour.dev/u/username`
+- Avatar, name, GitHub handle, join date
+- XP + current rank (e.g., "Senior Fixer")
+- Bug Type breakdown: visual chart (e.g., 40% Logic Errors, 30% Memory Leaks)
+- Challenge history: list of completed fixes with stack + difficulty
+- "Verified Fixer" badge if quality threshold is met
+- Share button (for recruiters / LinkedIn)
+
+### 3.7 Reports Page (Authenticated)
+- Personal analytics: XP over time chart
+- Strengths vs. weaknesses breakdown by bug type
+- AI conversation quality score per session
+- Submission history: pass/fail log with timestamps
+- Downloadable summary (PDF or shareable link) for portfolio use
+
+### 3.8 Recruiter View (Future — Phase 3)
+- Search fixers by stack, bug type, difficulty tier
+- View verified profiles
+- "Send a Challenge" — invite a candidate to complete a specific challenge
+- Company dashboard with candidate comparison
+
+---
+
+## 4. Technical Stack Recommendations
+
+| Layer | Recommendation | Reason |
+|---|---|---|
+| **Frontend** | React (Vite) | Fast dev experience, aligns with your existing setup |
+| **Routing** | React Router v6 | Industry standard, clean nested routing |
+| **Styling** | Tailwind CSS | Rapid UI development, consistent design system |
+| **Auth** | Google OAuth 2.0 via Firebase Auth or NextAuth (if migrating to Next.js) | Simple, secure, no backend auth to maintain |
+| **State Management** | Zustand | Lightweight, perfect for auth state + user session |
+| **API Communication** | Axios or Fetch with React Query | Caching, loading states, and error handling built in |
+| **Charts (Reports)** | Recharts or Chart.js | Easy integration with React, great for XP/progress charts |
+| **Backend (existing)** | Connect via REST API | The IDE backend already handles containers — this site just calls it |
+| **Hosting** | Vercel or Netlify | Zero-config React deployment, free tier available |
+
+---
+
+## 5. Conceptual Data Model
+
+The website layer primarily **reads from** your existing backend. These are the key data entities needed:
+
+**User**
+- `id`, `google_id`, `name`, `email`, `avatar_url`
+- `github_handle`, `role` (student / pro / recruiter)
+- `preferred_stacks[]`, `difficulty_tier`
+- `xp_points`, `rank`, `created_at`
+
+**Challenge** *(managed by existing backend)*
+- `id`, `title`, `description`, `stack`, `difficulty_score`
+- `bug_type`, `estimated_minutes`
+
+**Submission** *(managed by existing backend)*
+- `id`, `user_id`, `challenge_id`, `status` (pass/fail)
+- `xp_earned`, `ai_conversation_log`, `submitted_at`
+
+**Leaderboard Entry** *(computed/cached)*
+- `user_id`, `xp_total`, `bugs_fixed`, `top_bug_type`
+- `rank_position`, `period` (weekly / monthly / all-time)
+
+---
+
+## 6. User Interface Design Principles
+
+- **Dark-first design** — matches the War Room IDE aesthetic (dark bg, neon accent colors)
+- **Hacker / terminal aesthetic** — monospace fonts for code elements, glowing rank badges
+- **Minimal friction onboarding** — 5 steps max, no credit card, no email verification
+- **Mobile-responsive** — dashboard and profiles must work on mobile; the IDE itself stays desktop-only
+- **Gamification-forward** — XP bars, rank badges, streaks, and achievement unlocks should be visually prominent
+
+---
+
+## 7. Authentication & Security Considerations
+
+- Use Google OAuth 2.0 exclusively for auth — no password storage
+- JWT tokens for session management between the website and existing backend
+- Public profiles are read-only — no PII exposed beyond what the user opts in to share
+- Recruiter access to candidate profiles only through platform (no raw data export in MVP)
+- Rate-limit the leaderboard and profile APIs to prevent scraping
+
+---
+
+## 8. Development Phases
+
+### Phase 1 — Core Website MVP (Weeks 1–4)
+- Landing page
+- Google OAuth login + onboarding flow (5 steps)
+- Basic dashboard with challenge browser
+- Connect to existing backend API
+- "Enter War Room" flow working end-to-end
+- **Goal:** First 50 users complete the full onboarding → debug → submission loop
+
+### Phase 2 — Community Layer (Weeks 5–8)
+- Leaderboard (global + filtered)
+- Public Fixer Profiles (`/u/username`)
+- XP and rank system visible across the site
+- Reports page with basic analytics
+- **Goal:** Users share their profiles externally; organic community growth begins
+
+### Phase 3 — Recruiter & Growth (Weeks 9–12)
+- Recruiter role onboarding
+- "Search Fixers" interface
+- "Send a Challenge" feature
+- Verified Fixer badge logic
+- Downloadable/shareable profile summaries
+- **Goal:** First B2B pilot with a hiring company
+
+---
+
+## 9. Potential Challenges & Solutions
+
+| Challenge | Solution |
+|---|---|
+| **Connecting website auth to existing IDE backend** | Define a shared JWT standard early; the website issues a token on Google login, the IDE backend validates it |
+| **Leaderboard performance at scale** | Cache leaderboard snapshots every 5–15 minutes rather than computing live on every request |
+| **Onboarding drop-off** | Keep it to 5 steps max; allow users to skip stack/difficulty and set defaults; they can update later |
+| **Cold start (no community yet)** | Seed the leaderboard with internal test accounts showing realistic activity |
+| **Profile shareability** | Make `/u/username` profiles fully public and SEO-indexed so they appear in Google searches |
+
+---
+
+## 10. Future Expansion Possibilities
+
+- **Team Challenges** — 2-player co-debugging sessions
+- **Company-specific Challenge Packs** — companies sponsor custom bug scenarios
+- **Certification Badges** — "Zero Hour Certified React Debugger" for LinkedIn
+- **Mobile App** — leaderboard and profile browsing (not the IDE)
+- **Slack / Discord Integration** — post your fix to community channels automatically
+- **Streak Notifications** — email/push reminders to maintain debugging streaks
+- **API for Bootcamps** — let coding bootcamps embed Zero Hour challenges in their curriculum
+
+---
+
+## 11. Immediate Next Steps
+
+1. Set up React + Vite project with Tailwind CSS
+2. Implement Google OAuth and basic session management
+3. Design the 5-step onboarding flow
+4. Build the landing page and dashboard skeleton
+5. Establish the API contract between this website and your existing backend
+6. Deploy to Vercel for a shareable preview URL
+
+---
+
+*Generated by Zero Hour CTO Planning Session — March 2026*
