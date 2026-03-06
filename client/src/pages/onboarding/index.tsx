@@ -5,17 +5,50 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { Shield, Briefcase, GraduationCap, Github, Code2, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/use-auth";
+import { Input } from "@/components/ui/input";
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
 
 export default function OnboardingPage() {
+  const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(1);
   const [role, setRole] = useState("");
   const [stack, setStack] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState("");
 
+  const [usernameInput, setUsernameInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [isLoginMode, setIsLoginMode] = useState(false);
+
+  // If user is already authenticated, jump past auth step
+  if (user && step === 1) {
+    setStep(2);
+  }
+
   const handleNext = () => {
     if (step < 5) setStep(step + 1);
-    else setLocation("/dashboard");
+    else {
+      setLocation("/dashboard");
+    }
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!usernameInput || !passwordInput) return;
+
+    if (isLoginMode) {
+      await loginMutation.mutateAsync({ username: usernameInput, password: passwordInput });
+    } else {
+      await registerMutation.mutateAsync({ username: usernameInput, password: passwordInput });
+    }
+
+    // AuthContext handles the user state; the effect above will move them to step 2 automatically
   };
 
   const toggleStack = (s: string) => {
@@ -36,7 +69,7 @@ export default function OnboardingPage() {
             <span>Profile Sync</span>
           </div>
           <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-            <motion.div 
+            <motion.div
               className="h-full bg-primary box-glow-green"
               initial={{ width: `${((step - 1) / 5) * 100}%` }}
               animate={{ width: `${(step / 5) * 100}%` }}
@@ -54,25 +87,50 @@ export default function OnboardingPage() {
         >
           {step === 1 && (
             <div className="text-center space-y-8">
-              <div className="mx-auto w-16 h-16 bg-primary/10 flex items-center justify-center rounded-2xl border border-primary/20 box-glow-green mb-6">
-                <Shield className="h-8 w-8 text-primary" />
+              <div className="text-center space-y-6">
+                <div className="mx-auto w-16 h-16 bg-primary/10 flex items-center justify-center rounded-2xl border border-primary/20 box-glow-green mb-6">
+                  <Shield className="h-8 w-8 text-primary" />
+                </div>
+                <h2 className="text-3xl font-bold font-mono">Authenticate Profile</h2>
+                <p className="text-muted-foreground">Sign in or create an account to track your XP, rank, and verified fixes across the platform.</p>
+
+                <form onSubmit={handleAuthSubmit} className="space-y-4 max-w-sm mx-auto mt-8">
+                  <Input
+                    type="text"
+                    placeholder="Enter Username"
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    className="h-12 bg-card border-border/50 text-center font-mono"
+                  />
+                  <Input
+                    type="password"
+                    placeholder="Enter Password"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    className="h-12 bg-card border-border/50 text-center font-mono"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={loginMutation.isPending || registerMutation.isPending}
+                    size="lg"
+                    className="w-full h-14 text-lg font-mono bg-primary text-primary-foreground hover:bg-primary/90 box-glow-green"
+                  >
+                    {isLoginMode ? "Initialize Session" : "Generate Local Profile"}
+                  </Button>
+                </form>
+
+                <div className="mt-4">
+                  <span className="text-sm text-muted-foreground mr-2">
+                    {isLoginMode ? "Need to create a profile?" : "Already have an agent profile?"}
+                  </span>
+                  <button
+                    onClick={() => setIsLoginMode(!isLoginMode)}
+                    className="text-sm text-primary hover:underline font-mono"
+                  >
+                    {isLoginMode ? "Register new ID" : "Login instead"}
+                  </button>
+                </div>
               </div>
-              <h2 className="text-3xl font-bold font-mono">Authenticate Profile</h2>
-              <p className="text-muted-foreground">Connect your Google account to track your XP, rank, and verified fixes across the platform.</p>
-              
-              <Button 
-                onClick={handleNext}
-                size="lg" 
-                className="w-full sm:w-auto h-14 px-8 text-lg bg-card border border-border hover:border-primary/50 text-foreground"
-              >
-                <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Continue with Google
-              </Button>
             </div>
           )}
 
@@ -82,9 +140,9 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-bold font-mono">Select Designation</h2>
                 <p className="text-muted-foreground mt-2">How do you intend to use the platform?</p>
               </div>
-              
+
               <div className="grid grid-cols-1 gap-4">
-                <Card 
+                <Card
                   className={`cursor-pointer transition-all hover:border-primary/50 ${role === 'student' ? 'border-primary bg-primary/5 box-glow-green' : 'bg-card/50'}`}
                   onClick={() => setRole('student')}
                 >
@@ -98,8 +156,8 @@ export default function OnboardingPage() {
                     </div>
                   </CardContent>
                 </Card>
-                
-                <Card 
+
+                <Card
                   className={`cursor-pointer transition-all hover:border-blue-500/50 ${role === 'pro' ? 'border-blue-500 bg-blue-500/5 box-glow-green' : 'bg-card/50'}`}
                   onClick={() => setRole('pro')}
                 >
@@ -113,8 +171,8 @@ export default function OnboardingPage() {
                     </div>
                   </CardContent>
                 </Card>
-                
-                <Card 
+
+                <Card
                   className={`cursor-pointer transition-all hover:border-purple-500/50 ${role === 'recruiter' ? 'border-purple-500 bg-purple-500/5 box-glow-green' : 'bg-card/50'}`}
                   onClick={() => setRole('recruiter')}
                 >
@@ -129,7 +187,7 @@ export default function OnboardingPage() {
                   </CardContent>
                 </Card>
               </div>
-              
+
               <div className="flex justify-end mt-8">
                 <Button onClick={handleNext} disabled={!role} className="font-mono">
                   Next Step <ArrowRight className="ml-2 h-4 w-4" />
@@ -144,7 +202,7 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-bold font-mono">Target Environments</h2>
                 <p className="text-muted-foreground mt-2">Select your primary stacks for tailored challenges.</p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 {['React / Node.js', 'Python / Django', 'Go / Postgres', 'Vue / Express', 'Rust / Actix', 'Ruby / Actix'].map((s) => (
                   <Button
@@ -157,7 +215,7 @@ export default function OnboardingPage() {
                   </Button>
                 ))}
               </div>
-              
+
               <div className="flex justify-between mt-8">
                 <Button variant="ghost" onClick={() => setStep(2)}>Back</Button>
                 <Button onClick={handleNext} disabled={stack.length === 0} className="font-mono">
@@ -173,14 +231,14 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-bold font-mono">Operational Tier</h2>
                 <p className="text-muted-foreground mt-2">Select your initial difficulty baseline.</p>
               </div>
-              
+
               <div className="grid grid-cols-1 gap-4">
                 {[
                   { id: 'beginner', name: 'Junior Fixer', desc: 'Syntax errors, basic logic flaws, simple React state bugs' },
                   { id: 'intermediate', name: 'Mid-Level Operator', desc: 'Race conditions, memory leaks, complex API integrations' },
                   { id: 'senior', name: 'Senior Architect', desc: 'System crashes, obscure concurrency issues, performance bottlenecks' }
                 ].map((tier) => (
-                  <Card 
+                  <Card
                     key={tier.id}
                     className={`cursor-pointer transition-all hover:border-primary/50 ${difficulty === tier.id ? 'border-primary bg-primary/5 box-glow-green' : 'bg-card/50'}`}
                     onClick={() => setDifficulty(tier.id)}
@@ -199,7 +257,7 @@ export default function OnboardingPage() {
                   </Card>
                 ))}
               </div>
-              
+
               <div className="flex justify-between mt-8">
                 <Button variant="ghost" onClick={() => setStep(3)}>Back</Button>
                 <Button onClick={handleNext} disabled={!difficulty} className="font-mono">
@@ -215,7 +273,7 @@ export default function OnboardingPage() {
                 <h2 className="text-2xl font-bold font-mono">Finalize Synchronization</h2>
                 <p className="text-muted-foreground mt-2">Link external accounts to build your public portfolio.</p>
               </div>
-              
+
               <Card className="bg-card/50 border-border/50">
                 <CardContent className="p-6 text-center space-y-4">
                   <div className="mx-auto w-16 h-16 bg-secondary flex items-center justify-center rounded-full mb-2">
@@ -228,7 +286,7 @@ export default function OnboardingPage() {
                   </Button>
                 </CardContent>
               </Card>
-              
+
               <div className="flex justify-between mt-8">
                 <Button variant="ghost" onClick={() => setStep(4)}>Back</Button>
                 <Button onClick={handleNext} className="font-mono bg-primary text-primary-foreground box-glow-green hover:bg-primary/90">

@@ -1,0 +1,95 @@
+# 🚀 VS Code Web IDE → EC2 Production Deployment + AWS Bedrock AI Agent
+
+Deploy the IDE to your EC2 Ubuntu instance as a **full-blown cloud IDE** powered by AWS Bedrock Claude, with proper **session isolation and sandboxing**.
+
+---
+
+## 🏗️ Architecture Overview (Fixed)
+
+```mermaid
+graph TB
+    subgraph "User Browser"
+        UI["VS Code Web IDE<br/>(React + Monaco)"]
+    end
+
+    subgraph "EC2 Ubuntu (t3.small - 2GB RAM + 2GB Swap)"
+        subgraph "Nginx Reverse Proxy (Port 80/443)"
+            NG["Nginx<br/>SSL (your .xyz domain)"]
+        end
+
+        subgraph "Backend (Node.js - Port 5000)"
+            API["Express API Server"]
+            WS["WebSocket Terminal (Socket.io/ws)"]
+            BR["Bedrock AI Router"]
+            SM["Session Manager"]
+        end
+
+        subgraph "Docker Engine (Memory Capped)"
+            DC_A["Container A (User A)<br/>Port 32001"]
+            DC_B["Container B (User B)<br/>Port 32002"]
+        end
+
+        subgraph "AWS SDK"
+            BED["Bedrock Runtime Client<br/>Claude 3.5 Sonnet"]
+        end
+    end
+
+    UI -->|HTTPS .xyz| NG
+    NG -->|/*| Frontend_Static_Build
+    NG -->|/api/*| API
+    NG -->|/ws/*| WS
+    NG -->|/preview/:id/*| SessionRouter
+    
+    API --> SM
+    API --> BR --> BED
+    API --> |File Sync| DC_A
+    WS --> |docker exec| DC_A
+    SessionRouter --> DC_A
+```
+
+---
+
+## 🛠️ The 6 Critical System Pillars
+
+Based on the architectural review, the deployment will be built in this priority order to ensure stability and correctness:
+
+### 1. File Sync (Monaco → Container) - *Foundation*
+- **Problem**: The IDE must run the *latest* code, not old files on the host.
+- **Solution**: The `api/files/save` route will write directly into the user's specific Docker container using `fs` on the mounted workspace directory. File changes sync debounced in real-time.
+
+### 2. Session Management - *Core Layer*
+- **Problem**: Multiple users need their own environments. Nginx needs to know where to route `/preview`.
+- **Solution**: When a user connects, the backend generates a unique `sessionId` (e.g., stored in localStorage/cookies). This ID maps to:
+  - A unique Docker container.
+  - A unique external port range (e.g., User A gets 32001, User B gets 32002) mapped to the container's internal 3000.
+
+### 3. Container Lifecycle Manager - *Safety & Cost Control*
+- **Problem**: Orphaned containers will exhaust the t3.small's 2GB RAM.
+- **Solution**: A background service inside the backend tracks activity (last file save, last terminal input).
+  - Idle timeout: Destroys container after 30 mins of inactivity.
+  - Health checks: Reboots crashed containers.
+
+### 4. WebSocket Terminal - *User Experience*
+- **Problem**: Nginx drops WS without `Upgrade` headers, and terminal commands must run *inside* the container.
+- **Solution**:
+  - Nginx config includes: `proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade";`
+  - Backend uses `spawn('docker', ['exec', '-it', containerName, 'bash'])` instead of raw host bash.
+
+### 5. Preview Routing - *Running Apps*
+- **Problem**: Hardcoded port 8080 fails for multiple users.
+- **Solution**: The frontend requests `/preview/session-abc/`. Nginx (via a smart backend proxy proxy middleware like `http-proxy-middleware`) forwards that request to the specific EC2 port (`32001`) assigned to `session-abc`.
+
+### 6. Bedrock AI (Claude) - *Intelligence Layer*
+- **Problem**: AI needs context.
+- **Solution**: When the user chats, the [routes/ai.js](file:///c:/Users/Dell/ANTIGRAVITY_CODE/AWS/vscode-web-ide/backend/routes/ai.js) fetches the current open file's code, the recent terminal output buffer, and the conversation history, packaging it into a Bedrock Prompt. The response streams back via SSE.
+
+---
+
+## 🔧 Step-by-Step Implementation
+
+1. **Setup & Scripts**: [deploy.sh](file:///c:/Users/Dell/ANTIGRAVITY_CODE/AWS/vscode-web-ide/deploy.sh) for Swap + Alpine Docker + Base Nginx.
+2. **Backend Architecture**: Establish the `SessionManager` class to orchestrate Docker containers and port mappings.
+3. **Frontend Integration**: Send `sessionId` headers with every request and WebSocket connection.
+4. **AI & UI Polish**: Build the Bedrock prompt injection system.
+
+We are implementing exactly this structure.

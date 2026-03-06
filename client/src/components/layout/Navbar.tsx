@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Terminal, Trophy, User, LogOut, Menu } from "lucide-react";
@@ -10,10 +11,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Navbar() {
   const [location] = useLocation();
-  const isAuthenticated = location !== "/" && location !== "/onboarding";
+  const { user, logoutMutation } = useAuth();
+
+  // We use the actual API user state instead of local storage now
+  const isAuthenticated = !!user;
+  const userName = user?.username || "Guest";
 
   return (
     <nav className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -47,25 +53,26 @@ export default function Navbar() {
 
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex flex-col items-end mr-2">
-                <span className="text-sm font-bold text-primary font-mono text-glow-green">Lvl 42</span>
-                <span className="text-xs text-muted-foreground">Pro Fixer</span>
+                <span className="text-sm font-bold text-primary font-mono text-glow-green">Lvl 1</span>
+                <span className="text-xs text-muted-foreground">Junior Fixer</span>
               </div>
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full border border-primary/30 box-glow-green">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="User" />
-                      <AvatarFallback>JD</AvatarFallback>
+                    <Avatar className="h-9 w-9 bg-primary/20 text-primary">
+                      <AvatarFallback className="font-mono bg-transparent">
+                        {userName.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 bg-card border-border/50" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">J. Doe</p>
+                      <p className="text-sm font-medium leading-none">{userName}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        hacker@zerohour.dev
+                        {userName.toLowerCase().replace(/\s/g, '')}@zerohour.dev
                       </p>
                     </div>
                   </DropdownMenuLabel>
@@ -83,12 +90,13 @@ export default function Navbar() {
                     </DropdownMenuItem>
                   </Link>
                   <DropdownMenuSeparator className="bg-border/50" />
-                  <Link href="/">
-                    <DropdownMenuItem className="cursor-pointer font-mono text-sm text-destructive focus:bg-destructive/10">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </Link>
+                  <DropdownMenuItem
+                    className="cursor-pointer font-mono text-sm text-destructive focus:bg-destructive/10"
+                    onClick={() => logoutMutation.mutate()}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -6,26 +6,33 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Terminal, Bug, Zap, Activity, Clock, ChevronRight, ShieldAlert } from "lucide-react";
 import { Link } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
+import { TourModal } from "@/components/dashboard/TourModal";
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+
+  // We use the actual API user state instead of local storage now
+  const userName = user?.username || "Guest";
   return (
     <Layout>
+      <TourModal />
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold font-mono text-glow-green">Welcome back, J. Doe</h1>
+            <h1 className="text-3xl font-bold font-mono text-glow-green">Welcome back, {userName}</h1>
             <p className="text-muted-foreground font-mono mt-1">System status: All services operational</p>
           </div>
-          
+
           <div className="flex items-center gap-4 bg-card/50 p-3 rounded-lg border border-border/50">
             <div className="text-right">
               <div className="text-xs text-muted-foreground uppercase font-mono tracking-wider">Current Rank</div>
-              <div className="font-bold text-primary font-mono">Senior Fixer</div>
+              <div className="font-bold text-primary font-mono">Junior Fixer</div>
             </div>
             <div className="h-10 w-px bg-border/50"></div>
             <div className="text-right">
               <div className="text-xs text-muted-foreground uppercase font-mono tracking-wider">Total XP</div>
-              <div className="font-bold font-mono">14,250</div>
+              <div className="font-bold font-mono">0</div>
             </div>
             <div className="w-12 h-12 rounded-full border-2 border-primary flex items-center justify-center bg-primary/10 box-glow-green">
               <Zap className="h-6 w-6 text-primary" />
@@ -36,7 +43,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content Area */}
           <div className="lg:col-span-2 space-y-8">
-            
+
             {/* Active Challenge */}
             <Card className="border-primary/30 bg-card/60 backdrop-blur box-glow-green relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -z-10"></div>
@@ -44,8 +51,8 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <Badge className="bg-primary/20 text-primary border-primary/30 mb-2 font-mono hover:bg-primary/30">Active Assignment</Badge>
-                    <CardTitle className="text-2xl font-mono">Memory Leak in Infinite Scroll</CardTitle>
-                    <CardDescription className="mt-2 text-base">React • Intermediate • Est. Time: 25m</CardDescription>
+                    <CardTitle className="text-2xl font-mono">Fix the Login Bug</CardTitle>
+                    <CardDescription className="mt-2 text-base">Flask • Beginner • Est. Time: 15m</CardDescription>
                   </div>
                   <div className="text-right hidden sm:block">
                     <div className="text-sm text-muted-foreground font-mono">Reward</div>
@@ -54,15 +61,18 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-black/50 p-4 rounded-md font-mono text-sm border border-border/50 mb-6 font-mono overflow-x-auto text-muted-foreground">
-                  <p>The feed component is causing browser crashes after scrolling through ~500 items. Profiling indicates unmounted components are retaining detached DOM nodes.</p>
+                <div className="bg-black/50 p-4 rounded-md font-mono text-sm border border-border/50 mb-6 font-mono overflow-x-auto text-muted-foreground space-y-2">
+                  <p className="text-foreground font-bold">The login always returns 401 Unauthorized, even with correct credentials (admin / secret123).</p>
+                  <p>Your mission: Find and fix the bug in <code className="text-primary">app.py</code> so that valid credentials succeed and return a JWT-style token.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
                   <div className="flex gap-4 w-full sm:w-auto text-sm text-muted-foreground">
                     <div className="flex items-center gap-1"><Clock className="h-4 w-4" /> Started 2h ago</div>
                     <div className="flex items-center gap-1"><Activity className="h-4 w-4" /> 45% Fix Rate</div>
                   </div>
-                  <Button className="w-full sm:w-auto font-mono bg-primary text-primary-foreground hover:bg-primary/90 box-glow-green">
+                  <Button
+                    onClick={() => window.open("http://13.200.205.133/", "_blank")}
+                    className="w-full sm:w-auto font-mono bg-primary text-primary-foreground hover:bg-primary/90 box-glow-green">
                     Enter War Room <Terminal className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -117,27 +127,27 @@ export default function DashboardPage() {
               <CardContent className="space-y-6">
                 <div>
                   <div className="flex justify-between text-sm mb-1 font-mono">
-                    <span className="text-muted-foreground">Next Rank: Lead Fixer</span>
-                    <span className="text-primary">14,250 / 20,000 XP</span>
+                    <span className="text-muted-foreground">Next Rank: Mid-Level Operator</span>
+                    <span className="text-primary">0 / 1,000 XP</span>
                   </div>
-                  <Progress value={71} className="h-2 bg-secondary" />
+                  <Progress value={0} className="h-2 bg-secondary" />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div className="bg-background rounded-lg p-3 border border-border/50 text-center">
-                    <div className="text-2xl font-bold font-mono text-primary">42</div>
+                    <div className="text-2xl font-bold font-mono text-primary">0</div>
                     <div className="text-xs text-muted-foreground font-mono uppercase">Bugs Fixed</div>
                   </div>
                   <div className="bg-background rounded-lg p-3 border border-border/50 text-center">
-                    <div className="text-2xl font-bold font-mono text-blue-400">89%</div>
+                    <div className="text-2xl font-bold font-mono text-blue-400">0%</div>
                     <div className="text-xs text-muted-foreground font-mono uppercase">Success Rate</div>
                   </div>
                   <div className="bg-background rounded-lg p-3 border border-border/50 text-center">
-                    <div className="text-2xl font-bold font-mono text-purple-400">7</div>
+                    <div className="text-2xl font-bold font-mono text-purple-400">0</div>
                     <div className="text-xs text-muted-foreground font-mono uppercase">Day Streak</div>
                   </div>
                   <div className="bg-background rounded-lg p-3 border border-border/50 text-center">
-                    <div className="text-2xl font-bold font-mono text-yellow-500">#412</div>
+                    <div className="font-bold font-mono text-muted-foreground pt-1 pb-1" style={{ fontSize: "1rem", lineHeight: "1.5rem" }}>Unranked</div>
                     <div className="text-xs text-muted-foreground font-mono uppercase">Global Rank</div>
                   </div>
                 </div>
@@ -151,25 +161,10 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border/50">
-                  {[
-                    { text: "Fixed Null Pointer Exception", time: "2 hours ago", xp: "+150" },
-                    { text: "Failed Race Condition Challenge", time: "1 day ago", xp: "0" },
-                    { text: "Fixed CSS Grid Layout Issue", time: "2 days ago", xp: "+50" },
-                    { text: "Reached Level 42", time: "3 days ago", xp: "" },
-                  ].map((log, i) => (
-                    <div key={i} className="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors">
-                      <div className={`w-2 h-2 rounded-full ${log.xp === "0" ? 'bg-destructive' : log.xp ? 'bg-primary' : 'bg-blue-400'}`}></div>
-                      <div className="flex-1">
-                        <div className="text-sm font-mono">{log.text}</div>
-                        <div className="text-xs text-muted-foreground">{log.time}</div>
-                      </div>
-                      {log.xp && (
-                        <div className={`text-xs font-mono font-bold ${log.xp === "0" ? 'text-muted-foreground' : 'text-primary'}`}>
-                          {log.xp} XP
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  <div className="p-8 text-center text-muted-foreground text-sm font-mono flex flex-col items-center justify-center">
+                    <Terminal className="h-8 w-8 mb-3 opacity-20" />
+                    <span>No activity recorded yet.<br />Enter the War Room to begin.</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -4,10 +4,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Filter, ShieldAlert, Clock, Terminal, CheckCircle2 } from "lucide-react";
+import { Search, Filter, ShieldAlert, Clock, Terminal, CheckCircle2, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ChallengesPage() {
+  const WAR_ROOM_URL = "http://15.206.117.13/";
+
+  const handleEnterWarRoom = () => {
+    window.open(WAR_ROOM_URL, '_blank');
+  };
   const challenges = [
     {
       id: 1,
@@ -162,6 +167,7 @@ export default function ChallengesPage() {
                   </div>
                   
                   <Button 
+                    onClick={handleEnterWarRoom}
                     className={`w-full font-mono mt-auto ${
                       challenge.status === 'active' ? 'bg-primary text-primary-foreground hover:bg-primary/90 box-glow-green' :
                       challenge.status === 'completed' ? 'bg-secondary text-muted-foreground hover:bg-secondary' :
