@@ -8,7 +8,7 @@ import { Search, Filter, ShieldAlert, Clock, Terminal, CheckCircle2, Zap } from 
 import { motion } from "framer-motion";
 
 export default function ChallengesPage() {
-  const WAR_ROOM_URL = "http://15.206.117.13/";
+  const WAR_ROOM_URL = "http://13.200.205.133/";
 
   const handleEnterWarRoom = () => {
     window.open(WAR_ROOM_URL, '_blank');
@@ -94,12 +94,12 @@ export default function ChallengesPage() {
         <div className="flex flex-col lg:flex-row gap-4 mb-8 items-start lg:items-center justify-between">
           <div className="relative w-full lg:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by title, stack, or bug type..." 
+            <Input
+              placeholder="Search by title, stack, or bug type..."
               className="pl-10 bg-card/50 border-border/50 font-mono"
             />
           </div>
-          
+
           <div className="flex flex-wrap gap-2 w-full lg:w-auto">
             <Tabs defaultValue="all" className="w-full sm:w-auto">
               <TabsList className="bg-card/50 border border-border/50">
@@ -109,7 +109,7 @@ export default function ChallengesPage() {
                 <TabsTrigger value="security" className="font-mono">Security</TabsTrigger>
               </TabsList>
             </Tabs>
-            
+
             <Button variant="outline" className="font-mono bg-card/50 border-border/50">
               <Filter className="mr-2 h-4 w-4" /> Filter
             </Button>
@@ -125,35 +125,33 @@ export default function ChallengesPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <Card className={`h-full flex flex-col transition-all hover:-translate-y-1 ${
-                challenge.status === 'active' ? 'border-primary shadow-[0_0_15px_rgba(34,197,94,0.15)] bg-card/80' : 
-                challenge.status === 'completed' ? 'border-border/30 bg-card/30 opacity-70' : 
-                'border-border/50 hover:border-primary/50 bg-card/50'
-              }`}>
+              <Card className={`h-full flex flex-col transition-all hover:-translate-y-1 ${challenge.status === 'active' ? 'border-primary shadow-[0_0_15px_rgba(34,197,94,0.15)] bg-card/80' :
+                  challenge.status === 'completed' ? 'border-border/30 bg-card/30 opacity-70' :
+                    'border-border/50 hover:border-primary/50 bg-card/50'
+                }`}>
                 <CardContent className="p-6 flex-grow flex flex-col">
                   <div className="flex justify-between items-start mb-4">
-                    <Badge variant={challenge.status === 'completed' ? 'outline' : 'secondary'} className={`font-mono ${
-                      challenge.status === 'active' ? 'bg-primary/20 text-primary border-primary/30' : ''
-                    }`}>
+                    <Badge variant={challenge.status === 'completed' ? 'outline' : 'secondary'} className={`font-mono ${challenge.status === 'active' ? 'bg-primary/20 text-primary border-primary/30' : ''
+                      }`}>
                       {challenge.stack}
                     </Badge>
                     <div className="flex items-center gap-1 font-mono text-sm font-bold">
                       <span className={
                         challenge.difficulty <= 3 ? 'text-green-400' :
-                        challenge.difficulty <= 6 ? 'text-yellow-400' : 'text-red-400'
+                          challenge.difficulty <= 6 ? 'text-yellow-400' : 'text-red-400'
                       }>
                         Lvl {challenge.difficulty}
                       </span>
                     </div>
                   </div>
-                  
+
                   <h3 className="text-xl font-bold font-mono mb-2 flex items-start gap-2">
                     {challenge.status === 'completed' && <CheckCircle2 className="h-5 w-5 text-primary mt-1 shrink-0" />}
                     <span className={challenge.status === 'completed' ? 'line-through decoration-primary/50' : ''}>
                       {challenge.title}
                     </span>
                   </h3>
-                  
+
                   <div className="flex flex-wrap gap-3 mt-auto pt-4 mb-6 text-sm text-muted-foreground font-mono">
                     <span className="flex items-center gap-1 bg-background px-2 py-1 rounded-md border border-border/50">
                       <ShieldAlert className="h-3 w-3" /> {challenge.type}
@@ -165,14 +163,13 @@ export default function ChallengesPage() {
                       <Zap className="h-3 w-3" /> +{challenge.xp} XP
                     </span>
                   </div>
-                  
-                  <Button 
+
+                  <Button
                     onClick={handleEnterWarRoom}
-                    className={`w-full font-mono mt-auto ${
-                      challenge.status === 'active' ? 'bg-primary text-primary-foreground hover:bg-primary/90 box-glow-green' :
-                      challenge.status === 'completed' ? 'bg-secondary text-muted-foreground hover:bg-secondary' :
-                      'bg-card border border-primary/50 text-primary hover:bg-primary/10'
-                    }`}
+                    className={`w-full font-mono mt-auto ${challenge.status === 'active' ? 'bg-primary text-primary-foreground hover:bg-primary/90 box-glow-green' :
+                        challenge.status === 'completed' ? 'bg-secondary text-muted-foreground hover:bg-secondary' :
+                          'bg-card border border-primary/50 text-primary hover:bg-primary/10'
+                      }`}
                     disabled={challenge.status === 'completed'}
                   >
                     {challenge.status === 'active' ? (

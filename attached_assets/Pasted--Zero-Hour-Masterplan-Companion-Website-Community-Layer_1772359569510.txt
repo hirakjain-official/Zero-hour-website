@@ -5,7 +5,7 @@
 
 ## 1. App Overview & Objectives
 
-Zero Hour is a technical assessment and training platform that validates engineering skills through real-world debugging. The **core IDE engine is already built** and live at `http://15.206.117.13/`.
+Zero Hour is a technical assessment and training platform that validates engineering skills through real-world debugging. The **core IDE engine is already built** and live at `http://13.200.205.133/`.
 
 This masterplan covers the **companion website** — the public-facing layer that sits in front of the IDE. Its job is to:
 
@@ -54,7 +54,7 @@ This masterplan covers the **companion website** — the public-facing layer tha
 ### 3.4 Challenges Browser
 - Filter by: Stack, Difficulty (1–10), Bug Type (Memory Leak, Race Condition, CSS, etc.)
 - Challenge cards: title, stack badge, difficulty score, estimated time, number of fixers
-- "Enter War Room" button → launches existing IDE at `http://15.206.117.13/`
+- "Enter War Room" button → launches existing IDE at `http://13.200.205.133/`
 
 ### 3.5 Leaderboard (Community)
 - Global leaderboard: ranked by XP
