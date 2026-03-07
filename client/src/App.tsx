@@ -28,6 +28,7 @@ function Router() {
 }
 
 import { AuthProvider } from "@/hooks/use-auth";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <Analytics />
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
